@@ -124,12 +124,12 @@ describe('Hacker Stories', () => {
       })
 
       it('shows a max of 5 buttons for the last searched terms', () => {
-        const faker = require('faker')
+        const { faker } = require('@faker-js/faker')
 
         Cypress._.times(6, () => {
           cy.get('#search')
             .clear()
-            .type(`${faker.random.word()}{enter}`)
+            .type(`${faker.lorem.word()}{enter}`)
         })
 
         cy.assertLoadingIsShownAndHidden()
