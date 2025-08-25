@@ -1,10 +1,21 @@
 describe("Hacker Stories", () => {
+  const interceptSearch = (query = 'React', page = '0') => {
+    cy.intercept({
+      method: 'GET',
+      pathname: '**/search',
+      query: {
+        query,
+        page
+      }
+    }).as("search");
+  };
+
 	beforeEach(() => {
-		cy.intercept("GET", "**/search?query=React&page=0").as("search");
+		interceptSearch();
 
 		cy.visit("/");
 
-		cy.wait("@search", { timeout: 10000 });
+		cy.wait("@search", { timeout: 2000 });
 	});
 
 	it("shows the footer", () => {
@@ -22,11 +33,12 @@ describe("Hacker Stories", () => {
 		it.skip("shows the right data for all rendered stories", () => {});
 
 		it('shows 20 stories, then the next 20 after clicking "More"', () => {
+			interceptSearch('React', '1');
 			cy.get(".item").should("have.length", 20);
 
 			cy.contains("More").click();
 
-			cy.assertLoadingIsShownAndHidden();
+			cy.wait("@search", { timeout: 2000 });
 
 			cy.get(".item").should("have.length", 40);
 		});
@@ -67,13 +79,14 @@ describe("Hacker Stories", () => {
 		const newTerm = "Cypress";
 
 		beforeEach(() => {
-			cy.get("#search").clear();
+      cy.get("#search").clear();
+      interceptSearch(newTerm, '0');
 		});
 
 		it("types and hits ENTER", () => {
 			cy.get("#search").type(`${newTerm}{enter}`);
 
-			cy.assertLoadingIsShownAndHidden();
+			cy.wait("@search", { timeout: 2000 });
 
 			cy.get(".item").should("have.length", 20);
 			cy.get(".item").first().should("contain", newTerm);
@@ -84,7 +97,7 @@ describe("Hacker Stories", () => {
 			cy.get("#search").type(newTerm);
 			cy.contains("Submit").click();
 
-			cy.assertLoadingIsShownAndHidden();
+			cy.wait("@search", { timeout: 2000 });
 
 			cy.get(".item").should("have.length", 20);
 			cy.get(".item").first().should("contain", newTerm);
@@ -93,13 +106,14 @@ describe("Hacker Stories", () => {
 
 		context("Last searches", () => {
 			it("searches via the last searched term", () => {
+				interceptSearch('Cypress', '0');
 				cy.get("#search").type(`${newTerm}{enter}`);
 
-				cy.assertLoadingIsShownAndHidden();
+				cy.wait("@search", { timeout: 2000 });
 
 				cy.get(`button:contains(${initialTerm})`).should("be.visible").click();
 
-				cy.assertLoadingIsShownAndHidden();
+				cy.wait("@search", { timeout: 2000 });
 
 				cy.get(".item").should("have.length", 20);
 				cy.get(".item").first().should("contain", initialTerm);
@@ -107,13 +121,15 @@ describe("Hacker Stories", () => {
 			});
 
 			it("shows a max of 5 buttons for the last searched terms", () => {
-				const { faker } = require("@faker-js/faker");
-
+        const { faker } = require("@faker-js/faker");
+        
 				Cypress._.times(6, () => {
-					cy.get("#search").clear().type(`${faker.lorem.word()}{enter}`);
+          const fakeWord = faker.lorem.word();
+          interceptSearch(fakeWord, '0');
+          cy.get("#search").clear().type(`${fakeWord}{enter}`);
+          cy.wait("@search", { timeout: 2000 });
 				});
 
-				cy.assertLoadingIsShownAndHidden();
 
 				cy.get(".last-searches button").should("have.length", 5);
 			});
