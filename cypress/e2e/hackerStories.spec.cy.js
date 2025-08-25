@@ -1,14 +1,14 @@
 describe("Hacker Stories", () => {
-  const interceptSearch = (query = 'React', page = '0') => {
-    cy.intercept({
-      method: 'GET',
-      pathname: '**/search',
-      query: {
-        query,
-        page
-      }
-    }).as("search");
-  };
+	const interceptSearch = (query = "React", page = "0") => {
+		cy.intercept({
+			method: "GET",
+			pathname: "**/search",
+			query: {
+				query,
+				page,
+			},
+		}).as("search");
+	};
 
 	beforeEach(() => {
 		interceptSearch();
@@ -30,11 +30,11 @@ describe("Hacker Stories", () => {
 		// and so, how can I assert on the data?
 		// This is why this test is being skipped.
 		// TODO: Find a way to test it out.
-    // it.skip pula o teste
+		// it.skip pula o teste
 		it.skip("shows the right data for all rendered stories", () => {});
 
 		it('shows 20 stories, then the next 20 after clicking "More"', () => {
-			interceptSearch('React', '1');
+			interceptSearch("React", "1");
 			cy.get(".item").should("have.length", 20);
 
 			cy.contains("More").click();
@@ -44,7 +44,7 @@ describe("Hacker Stories", () => {
 			cy.get(".item").should("have.length", 40);
 		});
 
-    // it.only("shows only nineteen stories after dimissing the first story", () => {...) O only roda só esse teste e ignora os demais
+		// it.only("shows only nineteen stories after dimissing the first story", () => {...) O only roda só esse teste e ignora os demais
 		it("shows only nineteen stories after dimissing the first story", () => {
 			cy.get(".button-small").first().click();
 
@@ -81,8 +81,8 @@ describe("Hacker Stories", () => {
 		const newTerm = "Cypress";
 
 		beforeEach(() => {
-      cy.get("#search").clear();
-      interceptSearch(newTerm, '0');
+			cy.get("#search").clear();
+			interceptSearch(newTerm, "0");
 		});
 
 		it("types and hits ENTER", () => {
@@ -106,9 +106,18 @@ describe("Hacker Stories", () => {
 			cy.get(`button:contains(${initialTerm})`).should("be.visible");
 		});
 
+    // É um fluxo só para mostrar que é possível, porém o teste a seguir não é um fluxo que o usuário faria ou seria capaz de fazer
+		it("types and submits the form directly", () => {
+			cy.get("#search")
+				.should("be.visible")
+				.clear()
+				.type(newTerm);
+			cy.get(".search-form").submit();
+		});
+
 		context("Last searches", () => {
 			it("searches via the last searched term", () => {
-				interceptSearch('Cypress', '0');
+				interceptSearch("Cypress", "0");
 				cy.get("#search").type(`${newTerm}{enter}`);
 
 				cy.wait("@search", { timeout: 2000 });
@@ -123,15 +132,14 @@ describe("Hacker Stories", () => {
 			});
 
 			it("shows a max of 5 buttons for the last searched terms", () => {
-        const { faker } = require("@faker-js/faker");
-        
-				Cypress._.times(6, () => {
-          const fakeWord = faker.lorem.word();
-          interceptSearch(fakeWord, '0');
-          cy.get("#search").clear().type(`${fakeWord}{enter}`);
-          cy.wait("@search", { timeout: 2000 });
-				});
+				const { faker } = require("@faker-js/faker");
 
+				Cypress._.times(6, () => {
+					const fakeWord = faker.lorem.word();
+					interceptSearch(fakeWord, "0");
+					cy.get("#search").clear().type(`${fakeWord}{enter}`);
+					cy.wait("@search", { timeout: 2000 });
+				});
 
 				cy.get(".last-searches button").should("have.length", 5);
 			});
