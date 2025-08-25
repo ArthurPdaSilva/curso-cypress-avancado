@@ -30,6 +30,7 @@ describe("Hacker Stories", () => {
 		// and so, how can I assert on the data?
 		// This is why this test is being skipped.
 		// TODO: Find a way to test it out.
+    // it.skip pula o teste
 		it.skip("shows the right data for all rendered stories", () => {});
 
 		it('shows 20 stories, then the next 20 after clicking "More"', () => {
@@ -43,6 +44,7 @@ describe("Hacker Stories", () => {
 			cy.get(".item").should("have.length", 40);
 		});
 
+    // it.only("shows only nineteen stories after dimissing the first story", () => {...) O only roda só esse teste e ignora os demais
 		it("shows only nineteen stories after dimissing the first story", () => {
 			cy.get(".button-small").first().click();
 
