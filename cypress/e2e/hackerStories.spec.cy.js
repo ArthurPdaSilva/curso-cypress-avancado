@@ -1,142 +1,122 @@
-describe('Hacker Stories', () => {
-  beforeEach(() => {
-    cy.visit('/')
+describe("Hacker Stories", () => {
+	beforeEach(() => {
+		cy.intercept("GET", "**/search?query=React&page=0").as("search");
 
-    cy.assertLoadingIsShownAndHidden()
-    cy.contains('More').should('be.visible')
-  })
+		cy.visit("/");
 
-  it('shows the footer', () => {
-    cy.get('footer')
-      .should('be.visible')
-      .and('contain', 'Icons made by Freepik from www.flaticon.com')
-  })
+		cy.wait("@search", { timeout: 10000 });
+	});
 
-  context('List of stories', () => {
-    // Since the API is external,
-    // I can't control what it will provide to the frontend,
-    // and so, how can I assert on the data?
-    // This is why this test is being skipped.
-    // TODO: Find a way to test it out.
-    it.skip('shows the right data for all rendered stories', () => {})
+	it("shows the footer", () => {
+		cy.get("footer")
+			.should("be.visible")
+			.and("contain", "Icons made by Freepik from www.flaticon.com");
+	});
 
-    it('shows 20 stories, then the next 20 after clicking "More"', () => {
-      cy.get('.item').should('have.length', 20)
+	context("List of stories", () => {
+		// Since the API is external,
+		// I can't control what it will provide to the frontend,
+		// and so, how can I assert on the data?
+		// This is why this test is being skipped.
+		// TODO: Find a way to test it out.
+		it.skip("shows the right data for all rendered stories", () => {});
 
-      cy.contains('More').click()
+		it('shows 20 stories, then the next 20 after clicking "More"', () => {
+			cy.get(".item").should("have.length", 20);
 
-      cy.assertLoadingIsShownAndHidden()
+			cy.contains("More").click();
 
-      cy.get('.item').should('have.length', 40)
-    })
+			cy.assertLoadingIsShownAndHidden();
 
-    it('shows only nineteen stories after dimissing the first story', () => {
-      cy.get('.button-small')
-        .first()
-        .click()
+			cy.get(".item").should("have.length", 40);
+		});
 
-      cy.get('.item').should('have.length', 19)
-    })
+		it("shows only nineteen stories after dimissing the first story", () => {
+			cy.get(".button-small").first().click();
 
-    // Since the API is external,
-    // I can't control what it will provide to the frontend,
-    // and so, how can I test ordering?
-    // This is why these tests are being skipped.
-    // TODO: Find a way to test them out.
-    context.skip('Order by', () => {
-      it('orders by title', () => {})
+			cy.get(".item").should("have.length", 19);
+		});
 
-      it('orders by author', () => {})
+		// Since the API is external,
+		// I can't control what it will provide to the frontend,
+		// and so, how can I test ordering?
+		// This is why these tests are being skipped.
+		// TODO: Find a way to test them out.
+		context.skip("Order by", () => {
+			it("orders by title", () => {});
 
-      it('orders by comments', () => {})
+			it("orders by author", () => {});
 
-      it('orders by points', () => {})
-    })
+			it("orders by comments", () => {});
 
-    // Hrm, how would I simulate such errors?
-    // Since I still don't know, the tests are being skipped.
-    // TODO: Find a way to test them out.
-    context.skip('Errors', () => {
-      it('shows "Something went wrong ..." in case of a server error', () => {})
+			it("orders by points", () => {});
+		});
 
-      it('shows "Something went wrong ..." in case of a network error', () => {})
-    })
-  })
+		// Hrm, how would I simulate such errors?
+		// Since I still don't know, the tests are being skipped.
+		// TODO: Find a way to test them out.
+		context.skip("Errors", () => {
+			it('shows "Something went wrong ..." in case of a server error', () => {});
 
-  context('Search', () => {
-    const initialTerm = 'React'
-    const newTerm = 'Cypress'
+			it('shows "Something went wrong ..." in case of a network error', () => {});
+		});
+	});
 
-    beforeEach(() => {
-      cy.get('#search')
-        .clear()
-    })
+	context("Search", () => {
+		const initialTerm = "React";
+		const newTerm = "Cypress";
 
-    it('types and hits ENTER', () => {
-      cy.get('#search')
-        .type(`${newTerm}{enter}`)
+		beforeEach(() => {
+			cy.get("#search").clear();
+		});
 
-      cy.assertLoadingIsShownAndHidden()
+		it("types and hits ENTER", () => {
+			cy.get("#search").type(`${newTerm}{enter}`);
 
-      cy.get('.item').should('have.length', 20)
-      cy.get('.item')
-        .first()
-        .should('contain', newTerm)
-      cy.get(`button:contains(${initialTerm})`)
-        .should('be.visible')
-    })
+			cy.assertLoadingIsShownAndHidden();
 
-    it('types and clicks the submit button', () => {
-      cy.get('#search')
-        .type(newTerm)
-      cy.contains('Submit')
-        .click()
+			cy.get(".item").should("have.length", 20);
+			cy.get(".item").first().should("contain", newTerm);
+			cy.get(`button:contains(${initialTerm})`).should("be.visible");
+		});
 
-      cy.assertLoadingIsShownAndHidden()
+		it("types and clicks the submit button", () => {
+			cy.get("#search").type(newTerm);
+			cy.contains("Submit").click();
 
-      cy.get('.item').should('have.length', 20)
-      cy.get('.item')
-        .first()
-        .should('contain', newTerm)
-      cy.get(`button:contains(${initialTerm})`)
-        .should('be.visible')
-    })
+			cy.assertLoadingIsShownAndHidden();
 
-    context('Last searches', () => {
-      it('searches via the last searched term', () => {
-        cy.get('#search')
-          .type(`${newTerm}{enter}`)
+			cy.get(".item").should("have.length", 20);
+			cy.get(".item").first().should("contain", newTerm);
+			cy.get(`button:contains(${initialTerm})`).should("be.visible");
+		});
 
-        cy.assertLoadingIsShownAndHidden()
+		context("Last searches", () => {
+			it("searches via the last searched term", () => {
+				cy.get("#search").type(`${newTerm}{enter}`);
 
-        cy.get(`button:contains(${initialTerm})`)
-          .should('be.visible')
-          .click()
+				cy.assertLoadingIsShownAndHidden();
 
-        cy.assertLoadingIsShownAndHidden()
+				cy.get(`button:contains(${initialTerm})`).should("be.visible").click();
 
-        cy.get('.item').should('have.length', 20)
-        cy.get('.item')
-          .first()
-          .should('contain', initialTerm)
-        cy.get(`button:contains(${newTerm})`)
-          .should('be.visible')
-      })
+				cy.assertLoadingIsShownAndHidden();
 
-      it('shows a max of 5 buttons for the last searched terms', () => {
-        const { faker } = require('@faker-js/faker')
+				cy.get(".item").should("have.length", 20);
+				cy.get(".item").first().should("contain", initialTerm);
+				cy.get(`button:contains(${newTerm})`).should("be.visible");
+			});
 
-        Cypress._.times(6, () => {
-          cy.get('#search')
-            .clear()
-            .type(`${faker.lorem.word()}{enter}`)
-        })
+			it("shows a max of 5 buttons for the last searched terms", () => {
+				const { faker } = require("@faker-js/faker");
 
-        cy.assertLoadingIsShownAndHidden()
+				Cypress._.times(6, () => {
+					cy.get("#search").clear().type(`${faker.lorem.word()}{enter}`);
+				});
 
-        cy.get('.last-searches button')
-          .should('have.length', 5)
-      })
-    })
-  })
-})
+				cy.assertLoadingIsShownAndHidden();
+
+				cy.get(".last-searches button").should("have.length", 5);
+			});
+		});
+	});
+});
