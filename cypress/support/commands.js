@@ -1,3 +1,7 @@
+Cypress.Commands.add("search", (term) => {
+	cy.get("input").clear().type(`${term}{enter}`);
+});
+
 Cypress.Commands.add("assertLoadingIsShownAndHidden", () => {
 	cy.contains("Loading ...").should("be.visible");
 	cy.contains("Loading ...").should("not.exist");

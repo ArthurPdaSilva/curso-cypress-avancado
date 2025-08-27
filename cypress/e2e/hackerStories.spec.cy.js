@@ -270,3 +270,43 @@ describe("Hacker Stories", () => {
 		});
 	});
 });
+
+describe("Hacker News Search", () => {
+	const term = "cypress.io";
+
+	beforeEach(() => {
+		cy.intercept("**/search?query=redux&page=0&hitsPerPage=100", {
+			fixture: "empty",
+		}).as("empty");
+		cy.intercept(`**/search?query=${term}&page=0&hitsPerPage=100`, {
+			fixture: "stories",
+		}).as("stories");
+
+		cy.visit("https://hackernews-seven.vercel.app/");
+		cy.wait("@empty");
+	});
+
+	it("correctly caches the results", () => {
+		const { faker } = require("@faker-js/faker");
+		const fakeWord = faker.lorem.word();
+		let count = 0;
+
+		cy.intercept(`**/search?query=${fakeWord}**`, (req) => {
+			count += 1;
+			req.reply({ fixture: "empty" });
+		}).as("random");
+
+		cy.search(fakeWord).then(() => {
+			expect(count, `network calls to fetch ${fakeWord}`).to.equal(1);
+
+			cy.wait("@random");
+
+			cy.search(term);
+			cy.wait("@stories");
+
+			cy.search(fakeWord).then(() => {
+				expect(count, `network calls to fetch ${fakeWord}`).to.equal(1);
+			});
+		});
+	});
+});
