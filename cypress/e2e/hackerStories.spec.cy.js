@@ -32,7 +32,7 @@ describe("Hacker Stories", () => {
 			interceptSearch("React", "1");
 			cy.get(".item").should("have.length", 20);
 
-			cy.contains("More").click();
+			cy.contains("More").should("be.visible").click();
 
 			cy.wait("@search", { timeout: 2000 });
 
@@ -41,7 +41,7 @@ describe("Hacker Stories", () => {
 
 		it("searches via the last searched term", () => {
 			interceptSearch("Cypress", "0");
-			cy.get("#search").clear().type(`${newTerm}{enter}`);
+			cy.get("#search").should("be.visible").clear().type(`${newTerm}{enter}`);
 
 			cy.wait("@search", { timeout: 2000 });
 
@@ -50,7 +50,7 @@ describe("Hacker Stories", () => {
 			cy.wait("@search", { timeout: 2000 });
 
 			cy.get(".item").should("have.length", 20);
-			cy.get(".item").first().should("contain", initialTerm);
+			cy.get(".item").first().should("be.visible").and("contain", initialTerm);
 			cy.get(`button:contains(${newTerm})`).should("be.visible");
 		});
 	});
@@ -70,23 +70,140 @@ describe("Hacker Stories", () => {
 			});
 
 			context("List of stories", () => {
-				it.skip("shows the right data for all rendered stories", () => {});
+				const stories = require("../fixtures/stories.json");
+				const firstStory = stories.hits[0];
+				const lastStory = stories.hits[stories.hits.length - 1];
 
-				// it.only(): O only roda só esse teste e ignora os demais
+				it("shows the right data for all rendered stories", () => {
+					stories.hits.forEach((story) => {
+						cy.get(".item").contains(story.title).should("be.visible");
+						cy.get(".item").contains(story.author).should("be.visible");
+						cy.get(".item").contains(story.num_comments).should("be.visible");
+						cy.get(".item").contains(story.points).should("be.visible");
+						cy.get(`.item a[href="${story.url}"]`)
+							.should("be.visible")
+							.and("have.attr", "href", story.url);
+					});
+				});
+
+				// .only(): O only roda só esse teste e ignora os demais
 				it("shows one less story after dimissing the first one", () => {
-					cy.get(".button-small").first().click();
+					cy.get(".button-small").first().should("be.visible").click();
 
 					cy.get(".item").should("have.length", 1);
 				});
 
-				context.skip("Order by", () => {
-					it("orders by title", () => {});
+				context("Order by", () => {
+					it("orders by title", () => {
+						cy.get(".list-header-button")
+							.contains("Title")
+							.should("be.visible")
+							.click();
+						// cy.get(".list-header-button").contains("Title").as("orderByTitle").click(); Eu consigo dar alias para tags tbm
 
-					it("orders by author", () => {});
+						cy.get(".item")
+							.first()
+							.should("be.visible")
+							.and("contain", firstStory.title);
 
-					it("orders by comments", () => {});
+						cy.get(`.item a[href="${firstStory.url}"]`)
+							.should("be.visible")
+							.and("have.attr", "href", firstStory.url);
 
-					it("orders by points", () => {});
+						cy.get(".list-header-button")
+							.contains("Title")
+							.should("be.visible")
+							.click();
+
+						cy.get(".item")
+							.first()
+							.should("be.visible")
+							.and("contain", lastStory.title);
+
+						cy.get(`.item a[href="${lastStory.url}"]`)
+							.should("be.visible")
+							.and("have.attr", "href", lastStory.url);
+					});
+
+					it("orders by author", () => {
+						cy.get(".list-header-button")
+							.contains("Author")
+							.should("be.visible")
+							.click();
+
+						cy.get(".item")
+							.first()
+							.should("be.visible")
+							.and("contain", firstStory.author);
+
+						cy.get(`.item a[href="${firstStory.url}"]`)
+							.should("be.visible")
+							.and("have.attr", "href", firstStory.url);
+
+						cy.get(".list-header-button")
+							.contains("Author")
+							.should("be.visible")
+							.click();
+
+						cy.get(".item")
+							.first()
+							.should("be.visible")
+							.and("contain", lastStory.author);
+
+						cy.get(`.item a[href="${lastStory.url}"]`)
+							.should("be.visible")
+							.and("have.attr", "href", lastStory.url);
+					});
+
+					it("orders by comments", () => {
+						cy.get(".item")
+							.first()
+							.should("be.visible")
+							.and("contain", firstStory.num_comments);
+
+						cy.get(`.item a[href="${firstStory.url}"]`)
+							.should("be.visible")
+							.and("have.attr", "href", firstStory.url);
+
+						cy.get(".list-header-button")
+							.contains("Comments")
+							.should("be.visible")
+							.click();
+
+						cy.get(".item")
+							.first()
+							.should("be.visible")
+							.and("contain", lastStory.num_comments);
+
+						cy.get(`.item a[href="${lastStory.url}"]`)
+							.should("be.visible")
+							.and("have.attr", "href", lastStory.url);
+					});
+
+					it("orders by points", () => {
+						cy.get(".item")
+							.first()
+							.should("be.visible")
+							.and("contain", firstStory.points);
+
+						cy.get(`.item a[href="${firstStory.url}"]`)
+							.should("be.visible")
+							.and("have.attr", "href", firstStory.url);
+
+						cy.get(".list-header-button")
+							.contains("Points")
+							.should("be.visible")
+							.click();
+
+						cy.get(".item")
+							.first()
+							.should("be.visible")
+							.and("contain", lastStory.points);
+
+						cy.get(`.item a[href="${lastStory.url}"]`)
+							.should("be.visible")
+							.and("have.attr", "href", lastStory.url);
+					});
 				});
 			});
 		});
@@ -103,8 +220,12 @@ describe("Hacker Stories", () => {
 				cy.get("#search").clear();
 			});
 
+			it("shows no story when none is returned", () => {
+				cy.get(".item").should("not.exist");
+			});
+
 			it("types and hits ENTER", () => {
-				cy.get("#search").type(`${newTerm}{enter}`);
+				cy.get("#search").should("be.visible").type(`${newTerm}{enter}`);
 
 				cy.wait("@search", { timeout: 2000 });
 
@@ -113,8 +234,8 @@ describe("Hacker Stories", () => {
 			});
 
 			it("types and clicks the submit button", () => {
-				cy.get("#search").type(newTerm);
-				cy.contains("Submit").click();
+				cy.get("#search").should("be.visible").type(newTerm);
+				cy.contains("Submit").should("be.visible").click();
 
 				cy.wait("@search", { timeout: 2000 });
 
@@ -125,7 +246,7 @@ describe("Hacker Stories", () => {
 			// É um fluxo só para mostrar que é possível, porém o teste a seguir não é um fluxo que o usuário faria ou seria capaz de fazer
 			it("types and submits the form directly", () => {
 				cy.get("#search").should("be.visible").clear().type(newTerm);
-				cy.get(".search-form").submit();
+				cy.get(".search-form").should("be.visible").submit();
 			});
 
 			context("Last searches", () => {
@@ -134,8 +255,11 @@ describe("Hacker Stories", () => {
 
 					Cypress._.times(6, () => {
 						const fakeWord = faker.lorem.word();
-						interceptSearch(fakeWord, "0");
-						cy.get("#search").clear().type(`${fakeWord}{enter}`);
+						interceptSearch(fakeWord, "0", "empty");
+						cy.get("#search")
+							.should("be.visible")
+							.clear()
+							.type(`${fakeWord}{enter}`);
 						cy.wait("@search", { timeout: 2000 });
 					});
 
