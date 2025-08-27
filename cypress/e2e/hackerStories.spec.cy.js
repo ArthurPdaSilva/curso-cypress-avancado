@@ -2,52 +2,35 @@ describe("Hacker Stories", () => {
 	const initialTerm = "React";
 	const newTerm = "Cypress";
 
-	const interceptSearch = (
-		query = "React",
-		page = "0",
-		fixture,
-		customAlias = "search",
-	) => {
-		cy.intercept(
-			{
-				method: "GET",
-				pathname: "**/search",
-				query: {
-					query,
-					page,
-				},
-			},
-			fixture && { fixture },
-		).as(customAlias);
-	};
-
 	context("Hitting the real API", () => {
 		beforeEach(() => {
-			interceptSearch();
+			cy.interceptSearch();
 			cy.visit("/");
-			cy.wait("@search", { timeout: 2000 });
+			cy.wait("@search");
 		});
 
 		it('shows 20 stories, then the next 20 after clicking "More"', () => {
-			interceptSearch("React", "1");
+			cy.interceptSearch("React", "1");
 			cy.get(".item").should("have.length", 20);
 
 			cy.contains("More").should("be.visible").click();
 
-			cy.wait("@search", { timeout: 2000 });
+			cy.wait("@search");
 
 			cy.get(".item").should("have.length", 40);
 		});
 
 		it("searches via the last searched term", () => {
-			interceptSearch("Cypress", "0");
+			cy.interceptSearch("Cypress", "0");
 			cy.get("#search").should("be.visible").clear().type(`${newTerm}{enter}`);
 
-			cy.wait("@search", { timeout: 2000 });
+			cy.wait("@search");
+
+			cy.checkLocalStorage("search", newTerm);
 
 			cy.get(`button:contains(${initialTerm})`).should("be.visible").click();
 
-			cy.wait("@search", { timeout: 2000 });
+			cy.wait("@search");
 
 			cy.get(".item").should("have.length", 20);
 			cy.get(".item").first().should("be.visible").and("contain", initialTerm);
@@ -58,9 +41,9 @@ describe("Hacker Stories", () => {
 	context("Mocking API", () => {
 		context("Footer and list of stories", () => {
 			beforeEach(() => {
-				interceptSearch("React", "0", "stories");
+				cy.interceptSearch("React", "0", "stories");
 				cy.visit("/");
-				cy.wait("@search", { timeout: 2000 });
+				cy.wait("@search");
 			});
 
 			it("shows the footer", () => {
@@ -103,12 +86,10 @@ describe("Hacker Stories", () => {
 
 						cy.get(".item")
 							.first()
-							.should("be.visible")
-							.and("contain", firstStory.title);
-
-						cy.get(`.item a[href="${firstStory.url}"]`)
-							.should("be.visible")
-							.and("have.attr", "href", firstStory.url);
+							.within(() => {
+								cy.contains(firstStory.title).should("be.visible");
+								cy.get("a").should("have.attr", "href", firstStory.url);
+							});
 
 						cy.get(".list-header-button")
 							.contains("Title")
@@ -117,12 +98,10 @@ describe("Hacker Stories", () => {
 
 						cy.get(".item")
 							.first()
-							.should("be.visible")
-							.and("contain", lastStory.title);
-
-						cy.get(`.item a[href="${lastStory.url}"]`)
-							.should("be.visible")
-							.and("have.attr", "href", lastStory.url);
+							.within(() => {
+								cy.contains(lastStory.title).should("be.visible");
+								cy.get("a").should("have.attr", "href", lastStory.url);
+							});
 					});
 
 					it("orders by author", () => {
@@ -133,12 +112,10 @@ describe("Hacker Stories", () => {
 
 						cy.get(".item")
 							.first()
-							.should("be.visible")
-							.and("contain", firstStory.author);
-
-						cy.get(`.item a[href="${firstStory.url}"]`)
-							.should("be.visible")
-							.and("have.attr", "href", firstStory.url);
+							.within(() => {
+								cy.contains(firstStory.author).should("be.visible");
+								cy.get("a").should("have.attr", "href", firstStory.url);
+							});
 
 						cy.get(".list-header-button")
 							.contains("Author")
@@ -147,23 +124,19 @@ describe("Hacker Stories", () => {
 
 						cy.get(".item")
 							.first()
-							.should("be.visible")
-							.and("contain", lastStory.author);
-
-						cy.get(`.item a[href="${lastStory.url}"]`)
-							.should("be.visible")
-							.and("have.attr", "href", lastStory.url);
+							.within(() => {
+								cy.contains(lastStory.author).should("be.visible");
+								cy.get("a").should("have.attr", "href", lastStory.url);
+							});
 					});
 
 					it("orders by comments", () => {
 						cy.get(".item")
 							.first()
-							.should("be.visible")
-							.and("contain", firstStory.num_comments);
-
-						cy.get(`.item a[href="${firstStory.url}"]`)
-							.should("be.visible")
-							.and("have.attr", "href", firstStory.url);
+							.within(() => {
+								cy.contains(firstStory.num_comments).should("be.visible");
+								cy.get("a").should("have.attr", "href", firstStory.url);
+							});
 
 						cy.get(".list-header-button")
 							.contains("Comments")
@@ -172,23 +145,19 @@ describe("Hacker Stories", () => {
 
 						cy.get(".item")
 							.first()
-							.should("be.visible")
-							.and("contain", lastStory.num_comments);
-
-						cy.get(`.item a[href="${lastStory.url}"]`)
-							.should("be.visible")
-							.and("have.attr", "href", lastStory.url);
+							.within(() => {
+								cy.contains(lastStory.num_comments).should("be.visible");
+								cy.get("a").should("have.attr", "href", lastStory.url);
+							});
 					});
 
 					it("orders by points", () => {
 						cy.get(".item")
 							.first()
-							.should("be.visible")
-							.and("contain", firstStory.points);
-
-						cy.get(`.item a[href="${firstStory.url}"]`)
-							.should("be.visible")
-							.and("have.attr", "href", firstStory.url);
+							.within(() => {
+								cy.contains(firstStory.points).should("be.visible");
+								cy.get("a").should("have.attr", "href", firstStory.url);
+							});
 
 						cy.get(".list-header-button")
 							.contains("Points")
@@ -197,12 +166,10 @@ describe("Hacker Stories", () => {
 
 						cy.get(".item")
 							.first()
-							.should("be.visible")
-							.and("contain", lastStory.points);
-
-						cy.get(`.item a[href="${lastStory.url}"]`)
-							.should("be.visible")
-							.and("have.attr", "href", lastStory.url);
+							.within(() => {
+								cy.contains(lastStory.points).should("be.visible");
+								cy.get("a").should("have.attr", "href", lastStory.url);
+							});
 					});
 				});
 			});
@@ -210,9 +177,9 @@ describe("Hacker Stories", () => {
 
 		context("Search", () => {
 			beforeEach(() => {
-				interceptSearch(initialTerm, "0", "empty", "emptySearch");
+				cy.interceptSearch(initialTerm, "0", "empty", "emptySearch");
 
-				interceptSearch(newTerm, "0", "stories", "search");
+				cy.interceptSearch(newTerm, "0", "stories", "search");
 
 				cy.visit("/");
 				cy.wait("@emptySearch", { timeout: 5000 });
@@ -227,7 +194,9 @@ describe("Hacker Stories", () => {
 			it("types and hits ENTER", () => {
 				cy.get("#search").should("be.visible").type(`${newTerm}{enter}`);
 
-				cy.wait("@search", { timeout: 2000 });
+				cy.wait("@search");
+
+				cy.checkLocalStorage("search", newTerm);
 
 				cy.get(".item").should("have.length", 2);
 				cy.get(`button:contains(${initialTerm})`).should("be.visible");
@@ -237,13 +206,15 @@ describe("Hacker Stories", () => {
 				cy.get("#search").should("be.visible").type(newTerm);
 				cy.contains("Submit").should("be.visible").click();
 
-				cy.wait("@search", { timeout: 2000 });
+				cy.wait("@search");
+
+				cy.checkLocalStorage("search", newTerm);
 
 				cy.get(".item").should("have.length", 2);
 				cy.get(`button:contains(${initialTerm})`).should("be.visible");
 			});
 
-			// É um fluxo só para mostrar que é possível, porém o teste a seguir não é um fluxo que o usuário faria ou seria capaz de fazer
+			// É um fluxo só para mostrar que é possível, porém o teste a seguir não é um fluxo que o usuário faria ou seria capaz de fazerlsd
 			it("types and submits the form directly", () => {
 				cy.get("#search").should("be.visible").clear().type(newTerm);
 				cy.get(".search-form").should("be.visible").submit();
@@ -255,53 +226,34 @@ describe("Hacker Stories", () => {
 
 					Cypress._.times(6, () => {
 						const fakeWord = faker.lorem.word();
-						interceptSearch(fakeWord, "0", "empty");
+						cy.interceptSearch(fakeWord, "0", "empty");
 						cy.get("#search")
 							.should("be.visible")
 							.clear()
 							.type(`${fakeWord}{enter}`);
-						cy.wait("@search", { timeout: 2000 });
+						cy.wait("@search");
+
+						cy.checkLocalStorage("search", fakeWord);
 					});
 
 					cy.get(".last-searches button").should("have.length", 5);
+					//Uma alternativa: cy.get(".last-searches").within(() => {
+					// cy.get("button").should("have.length", 5);
+					// });
 				});
 			});
 		});
 	});
 
 	context("Error handling", () => {
-		const interceptServerError = (errorType) => {
-			cy.intercept(
-				{
-					method: "GET",
-					pathname: "**/search",
-					query: {
-						query: "React",
-						page: "0",
-					},
-				},
-				{
-					forceNetworkError: errorType === "network",
-					statusCode: errorType === "server" ? 500 : undefined,
-				},
-			).as("search");
-		};
-
-		const visitHomePageAndCheckError = () => {
-			cy.visit("/");
-			cy.wait("@search", { timeout: 2000 });
-
-			cy.get("p:contains('Something went wrong ...')").should("be.visible");
-		};
-
 		it('shows "Something went wrong ..." in case of a server error', () => {
-			interceptServerError("server");
-			visitHomePageAndCheckError();
+			cy.interceptServerError("server");
+			cy.visitHomePageAndCheckError();
 		});
 
 		it('shows "Something went wrong ..." in case of a network error', () => {
-			interceptServerError("network");
-			visitHomePageAndCheckError();
+			cy.interceptServerError("network");
+			cy.visitHomePageAndCheckError();
 		});
 	});
 });
