@@ -1,6 +1,20 @@
+Cypress.Commands.add("assertLoadingIsShownAndHidden", () => {
+	cy.contains("Loading ...").should("be.visible");
+	cy.contains("Loading ...").should("not.exist");
+});
+
 Cypress.Commands.add(
 	"interceptSearch",
-	(query = "React", page = "0", fixture, customAlias = "search") => {
+	(query = "React", page = "0", fixture, customAlias = "search", delay) => {
+		let handler;
+		if (fixture && delay) {
+			handler = { fixture, delay };
+		} else if (fixture) {
+			handler = { fixture };
+		} else if (delay) {
+			handler = { delay };
+		}
+
 		cy.intercept(
 			{
 				method: "GET",
@@ -10,7 +24,7 @@ Cypress.Commands.add(
 					page,
 				},
 			},
-			fixture && { fixture },
+			handler,
 		).as(customAlias);
 	},
 );

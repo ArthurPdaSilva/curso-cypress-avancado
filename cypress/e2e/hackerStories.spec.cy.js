@@ -1,3 +1,5 @@
+// Testes Flake são testes que falham de forma intermitente, geralmente devido a problemas de sincronização ou condições de corrida.
+
 describe("Hacker Stories", () => {
 	const initialTerm = "React";
 	const newTerm = "Cypress";
@@ -44,6 +46,17 @@ describe("Hacker Stories", () => {
 				cy.interceptSearch("React", "0", "stories");
 				cy.visit("/");
 				cy.wait("@search");
+			});
+
+			it('shows a "Loading ..." state before showing the results', () => {
+				cy.interceptSearch("React", "0", "stories", "delaySearch", 1000);
+				cy.visit("/");
+
+				cy.assertLoadingIsShownAndHidden();
+
+				cy.wait("@delaySearch");
+
+				cy.get(".item").should("have.length", 2);
 			});
 
 			it("shows the footer", () => {
